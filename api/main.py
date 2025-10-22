@@ -1,26 +1,27 @@
+import random
 from fastapi import FastAPI
 
-# CORS (Cross-Origin Resource Sharing)
-# allows us to restrict/enable 
-# which client urls are allowed 
-# to send requests to this backend code. 
-from fastapi.middleware.cors import CORSMiddleware
+# 1. Data Source (In-Memory List)
+# This list simulates a simple, pre-defined dataset.
+FOOD_CHOICES = [
+    "Pizza 🍕",
+    "Tacos 🌮",
+    "Sushi 🍣",
+    "Classic Burger 🍔",
+    "Thai Curry 🌶️",    
+    "Grilled Cheese & Tomato 🍅",
+    "Chicken Shawarma 🐔",
+    "Vegan Bowl 🥗",
+    "Pho Noodle Soup 🍲"
+]
 
-# Initialize the FastAPI application
-app = FastAPI(
-    title="FastAPI Example",
-    description="This is an example of using FastAPI"
-)
+# 2. App Initialization
+# This creates the FastAPI application instance.
+app = FastAPI()
 
-# Enable CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # star means all client urls allowed 
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# 3. API Endpoint Definitions (the routes)
 
+# Default route
 @app.get("/")           #endpoint, or route, always starts with a forward slash
 def default_route():    #route handler function
     """
@@ -28,17 +29,46 @@ def default_route():    #route handler function
     """
     return "You have reached the default route. Back-end server is listening..."
     
-@app.get("/example")  
-def get_example():    
-    """
-    This endpoint returns a JSON object consisting of a simple message.
-    """
-    return {"message": "Hello World!"}
 
-@app.get("/example2")  
-def get_example2(name):    # can also pass in parameters
+# When a user sends a GET request to '/random-choice', this function runs.
+@app.get("/random-choice")
+def get_random_food_choice():
     """
-    This endpoint takes in a parameter called "name"
+    Returns a single random food choice from the FOOD_CHOICES list.
     """
-    return {"message": f"Hello {name}!"}
+    # Use the built-in Python 'random' module to pick one item.
+    selected_choice = random.choice(FOOD_CHOICES)
+    
+    # Return a Python dictionary, which FastAPI converts to a JSON response.
+    return {"status": "success", "choice": selected_choice}
 
+@app.get("/my-choice/")
+def get_my_food_choice(choice):    
+    # convert to integer
+    choiceNumber = int(choice)
+
+    # check if choice is a valid index i.e. between 0 and length of list
+    if choiceNumber >= 0 and choiceNumber < len(FOOD_CHOICES):
+      # Use the passed in choice number; passed in as query parameter
+      selected_choice = FOOD_CHOICES[choiceNumber]
+    
+      # Return a Python dictionary, which FastAPI converts to a JSON response.     
+      return {"status": "success", "choice": selected_choice}
+    else:
+      return {"status": "error", "message": f"invalid choice:{choice}"}  
+
+
+@app.get("/alternative-choice/{choice}")
+def get_my_alt_choice(choice):    
+    # convert to integer
+    choiceNumber = int(choice)
+
+    # check if choice is a valid index i.e. between 0 and length of list
+    if choiceNumber >= 0 and choiceNumber < len(FOOD_CHOICES):
+      # Use the passed in choice number; passed in as path parameter aka REST parameter
+      selected_choice = FOOD_CHOICES[choiceNumber]
+    
+      # Return a Python dictionary, which FastAPI converts to a JSON response.     
+      return {"status": "success", "altchoice": selected_choice}
+    else:
+      return {"status": "error", "message": f"invalid choice:{choice}"}  
